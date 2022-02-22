@@ -19,7 +19,7 @@ func NewDBRepo(db *sql.DB) *DB {
 }
 
 func InitDB() *DB {
-	db, err := sql.Open("postgres", "user=gomap_user password=gomap_user dbname=gomap_db sslmode=disable")
+	db, err := sql.Open("postgres", "user=gomap_admin password=gomap_admin dbname=gomap_db sslmode=disable host=db")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
