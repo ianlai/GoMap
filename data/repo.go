@@ -25,9 +25,11 @@ func NewDBRepo(db *sql.DB) *DB {
 	}
 }
 
-func InitDB() *DB {
-	connStr := fmt.Sprintf("sslmode=disable host=%s user=%s dbname=%s password=%s",
+func InitDB() *sql.DB {
+	connStr := fmt.Sprintf(
+		"sslmode=disable host=%s user=%s dbname=%s password=%s",
 		DBHost, DBUser, DBName, DBPassword)
+
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		fmt.Println(err)
@@ -41,5 +43,6 @@ func InitDB() *DB {
 	}
 
 	fmt.Println("DB connection successful!!")
-	return NewDBRepo(db)
+	//return NewDBRepo(db)
+	return db
 }
