@@ -1,18 +1,32 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/ianlai/GoMap/data"
 )
 
 func main() {
-	fmt.Println("Hello Map")
+	log.Println("Hello Map")
 	url := "https://bucket-ian-1.s3.amazonaws.com/data_short.txt"
 	k := 29
 
 	db := data.InitDB()
-	data.UpdateMap(db, url)
-	res := data.GetTopKth(db, k)
-	fmt.Printf("Top-%vth: %v\n", k, res)
+
+	lines, err := RetrieveData(db, url)
+	if err != nil {
+		log.Printf("%s", err)
+	}
+
+	err = InsertRecords(db, lines)
+	if err != nil {
+		log.Printf("%s", err)
+	}
+
+	uid, err := GetTopKthVal(db, k)
+	if err != nil {
+		log.Printf("%s", err)
+	}
+
+	log.Printf("[Final] Top-%vth: %v\n", k, uid)
 }
