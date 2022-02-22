@@ -9,6 +9,9 @@ import (
 	"strings"
 )
 
+const insertData = `INSERT INTO map (id, val) VALUES ($1, $2)`
+const readData = `SELECT id, val FROM map ORDER BY val DESC LIMIT $1;`
+
 func (db *DB) UpdateMap(url string) {
 	fmt.Println("Update Map from:", url)
 
@@ -21,21 +24,21 @@ func (db *DB) UpdateMap(url string) {
 
 	for _, line := range lines {
 		words := strings.Fields(line)
-		_, err := db.Exec("INSERT INTO map (id, val) VALUES ($1, $2);", words[0], words[1])
+		_, err := db.Exec(insertData, words[0], words[1])
 		checkError(err)
 	}
 }
 
 func (db *DB) GetTopKth(k int) string {
 	fmt.Printf("Get %v-th record \n", k)
-	r1, err := db.Query("SELECT id, val FROM map ORDER BY val DESC LIMIT $1;", k)
+	rows, err := db.Query(readData, k)
 	checkError(err)
-	defer r1.Close()
+	defer rows.Close()
 
 	var id string
 	var val string
-	for r1.Next() {
-		err = r1.Scan(&id, &val)
+	for rows.Next() {
+		err = rows.Scan(&id, &val)
 		checkError(err)
 	}
 	return id
