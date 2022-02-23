@@ -19,7 +19,7 @@ func TestUpdateMap(t *testing.T) {
 		//AddRow(3, "78eab4ccbdd98fa911e", 1886, time.Now())
 
 	mock.ExpectQuery("INSERT INTO map (uid, val) VALUES ($1, $2)").WithArgs("78eab4ccbdd98fa911e", 1886).WillReturnRows(rows)
-	err = UpdateMap(db, "https://bucket-ian-1.s3.amazonaws.com/data_short.txt")
+	err = UpdateMap(db, "https://bucket-ian-1.s3.amazonaws.com/data_prefix.txt")
 	if err != nil {
 		t.Errorf("Expected no error, but error occured: %s", err)
 	}

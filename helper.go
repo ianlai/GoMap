@@ -3,7 +3,9 @@ package main
 import (
 	"bufio"
 	"database/sql"
+	"errors"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -18,12 +20,22 @@ func RetrieveData(db *sql.DB, url string) ([]string, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-
-	lines, err := GetLinesFromReader(resp.Body)
+	r, err := RemovePrefixData(resp.Body, 500)
+	if err != nil {
+		return nil, err
+	}
+	lines, err := GetLinesFromReader(r)
 	if err != nil {
 		return nil, err
 	}
 	return lines, nil
+}
+func RemovePrefixData(r io.Reader, removeLength int64) (io.Reader, error) {
+	_, err := io.CopyN(ioutil.Discard, r, removeLength)
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
 }
 func GetLinesFromReader(r io.Reader) ([]string, error) {
 	var lines []string
@@ -50,6 +62,9 @@ func GetTopKthVal(db *sql.DB, k int) (string, error) {
 	records, err := data.GetRecordsSortedByVal(db, k)
 	if err != nil {
 		return "", err
+	}
+	if len(records) < k {
+		return "", errors.New("k is larger than the size of the data")
 	}
 	return records[len(records)-1].Uid, nil
 }

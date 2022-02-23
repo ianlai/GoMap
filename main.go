@@ -8,7 +8,7 @@ import (
 
 func main() {
 	log.Println("Hello Map")
-	url := "https://bucket-ian-1.s3.amazonaws.com/data_short.txt"
+	url := "https://bucket-ian-1.s3.amazonaws.com/data_prefix.txt"
 	k := 29
 
 	db := data.InitDB()
