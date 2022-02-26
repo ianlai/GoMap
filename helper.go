@@ -2,9 +2,7 @@ package main
 
 import (
 	"bufio"
-	"database/sql"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -44,7 +42,6 @@ func GetLinesFromReader(r io.Reader) ([]string, error) {
 	count := 0
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
-		fmt.Println(count, lines)
 		count++
 	}
 	err := scanner.Err()
@@ -53,20 +50,20 @@ func GetLinesFromReader(r io.Reader) ([]string, error) {
 	}
 	return lines, nil
 }
-func InsertRecords(db *sql.DB, records []string) error {
+func InsertRecords(repo data.Repo, records []string) error {
 	log.Println("[Main] InsertRecords")
 	for _, record := range records {
 		words := strings.Fields(record)
-		err := data.InsertRecord(db, words[0], words[1])
+		err := repo.InsertRecord(words[0], words[1])
 		if err != nil {
 			return err
 		}
 	}
 	return nil
 }
-func GetTopKthVal(db *sql.DB, k int) (string, error) {
+func GetTopKthVal(repo data.Repo, k int) (string, error) {
 	log.Printf("[Main] Get %v-th record \n", k)
-	records, err := data.GetRecordsSortedByVal(db, k)
+	records, err := repo.GetRecordsSortedByVal(k)
 	if err != nil {
 		return "", err
 	}

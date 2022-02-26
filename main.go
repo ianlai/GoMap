@@ -10,7 +10,7 @@ func main() {
 	log.Println("Hello Map")
 	url := "https://bucket-ian-1.s3.amazonaws.com/data_prefix.txt"
 	var removedLength int64 = 500
-	k := 29
+	k := 6
 	db := data.InitDB()
 
 	lines, err := RetrieveData(url, removedLength)

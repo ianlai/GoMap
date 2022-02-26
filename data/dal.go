@@ -1,7 +1,6 @@
 package data
 
 import (
-	"database/sql"
 	"log"
 )
 
@@ -18,9 +17,10 @@ const readData = `
 		map 
 	ORDER BY 
 		val 
-	DESC LIMIT $1`
+	DESC 
+	LIMIT $1`
 
-func InsertRecord(db *sql.DB, uid string, val string) error {
+func (db *DB) InsertRecord(uid string, val string) error {
 	log.Printf("[Data] InsertRecord: %s, %s", uid, val)
 	_, err := db.Exec(insertData, uid, val)
 	if err != nil {
@@ -29,7 +29,7 @@ func InsertRecord(db *sql.DB, uid string, val string) error {
 	return nil
 }
 
-func GetRecordsSortedByVal(db *sql.DB, k int) ([]Record, error) {
+func (db *DB) GetRecordsSortedByVal(k int) ([]Record, error) {
 	log.Printf("[Data] GetRecordsSortedByVal: %v", k)
 
 	rows, err := db.Query(readData, k)

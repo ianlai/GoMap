@@ -1,6 +1,7 @@
 package data
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -9,15 +10,16 @@ import (
 
 // 1. decide the query
 // 2. insert beforehand
-// 3. t.Fatal  t.Error
+// 3. sqlmock.NewResult(2, 2)
 // 4. mock.ExpectationsWereMet()
+// 5. t.Fatal  t.Error //t.Fatal(exit for that testcase immediately )
 
 func TestInsertRecord(t *testing.T) {
 	params := Record{
 		Uid: "78eab4ccbdd98fa911e",
 		Val: "1886",
 	}
-	query := `INSERT INTO map (uid, val)`
+	query := `INSERT INTO map`
 	tests := []struct {
 		name        string
 		mockClosure func(mock sqlmock.Sqlmock)
@@ -51,8 +53,9 @@ func TestInsertRecord(t *testing.T) {
 			}
 			defer db.Close()
 			tt.mockClosure(mock)
-			gotErr := InsertRecord(db, params.Uid, params.Val)
-			if (err != nil) != tt.wantErr {
+			customDB := &DB{db}
+			gotErr := customDB.InsertRecord(params.Uid, params.Val)
+			if (gotErr != nil) != tt.wantErr {
 				t.Errorf("gotErr = %v, wantErr %v", gotErr, tt.wantErr)
 			}
 			if err := mock.ExpectationsWereMet(); err != nil {
@@ -63,13 +66,9 @@ func TestInsertRecord(t *testing.T) {
 }
 
 func TestGetRecordsSortedByVal(t *testing.T) {
-	query := `SELECT 
-				uid, val 
-			FROM 
-				map 
-			ORDER BY 
-				val 
-			DESC LIMIT $1`
+	query := `SELECT uid, val FROM map`
+
+	param_k := 2
 	tests := []struct {
 		name        string
 		mockClosure func(mock sqlmock.Sqlmock)
@@ -80,19 +79,21 @@ func TestGetRecordsSortedByVal(t *testing.T) {
 		{
 			name: "Case1: Successful",
 			mockClosure: func(mock sqlmock.Sqlmock) {
-				result := sqlmock.NewResult(2, 2)
-				mock.ExpectExec(query).
-					WillReturnResult(result)
+				result := sqlmock.NewRows([]string{"uid", "val"}).
+					AddRow("78eab4ccbdd98fa911e", "1886").
+					AddRow("0c2a9c4b0566e49721a", "377")
+				mock.ExpectQuery(query).
+					WithArgs(param_k).WillReturnRows(result)
 			},
-			k: 2,
+			k: param_k,
 			want: []Record{
 				{
 					Uid: "78eab4ccbdd98fa911e",
 					Val: "1886",
 				},
 				{
-					Uid: "78eab4ccbdd98fa911e",
-					Val: "1886",
+					Uid: "0c2a9c4b0566e49721a",
+					Val: "377",
 				},
 			},
 			wantErr: false,
@@ -100,10 +101,11 @@ func TestGetRecordsSortedByVal(t *testing.T) {
 		{
 			name: "Case2: Failed",
 			mockClosure: func(mock sqlmock.Sqlmock) {
-				mock.ExpectExec(query).
-					WillReturnError(fmt.Errorf("error_occured"))
+				mock.ExpectQuery(query).
+					WithArgs(param_k).
+					WillReturnError(errors.New("error_occured"))
 			},
-			k:       2,
+			k:       param_k,
 			want:    nil,
 			wantErr: true,
 		},
@@ -116,7 +118,8 @@ func TestGetRecordsSortedByVal(t *testing.T) {
 			}
 			defer db.Close()
 			tt.mockClosure(mock)
-			gotRecords, gotErr := GetRecordsSortedByVal(db, tt.k)
+			customDB := &DB{db}
+			gotRecords, gotErr := customDB.GetRecordsSortedByVal(tt.k)
 			if (gotErr != nil) != tt.wantErr {
 				t.Errorf("gotErr = %v, wantErr %v", gotErr, tt.wantErr)
 			}

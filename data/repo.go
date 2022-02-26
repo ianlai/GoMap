@@ -15,8 +15,14 @@ const (
 	DBHost     = "db"
 )
 
+// Repo interface
+type Repo interface {
+	InsertRecord(string, string) error
+	GetRecordsSortedByVal(int) ([]Record, error)
+}
+
 type DB struct {
-	*sql.DB
+	*sql.DB // struct embedding
 }
 
 func NewDBRepo(db *sql.DB) *DB {
@@ -25,7 +31,7 @@ func NewDBRepo(db *sql.DB) *DB {
 	}
 }
 
-func InitDB() *sql.DB {
+func InitDB() *DB {
 	connStr := fmt.Sprintf(
 		"sslmode=disable host=%s user=%s dbname=%s password=%s",
 		DBHost, DBUser, DBName, DBPassword)
@@ -43,6 +49,6 @@ func InitDB() *sql.DB {
 	}
 
 	fmt.Println("DB connection successful!!")
-	//return NewDBRepo(db)
-	return db
+	return NewDBRepo(db)
+	//return db
 }

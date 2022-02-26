@@ -2,9 +2,12 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"reflect"
 	"testing"
+
+	"github.com/ianlai/GoMap/data"
 )
 
 // test http get (really need a url to download?)
@@ -93,6 +96,12 @@ func TestRemovePrefixData(t *testing.T) {
 	}
 }
 
+type errorReader struct{}
+
+func (e *errorReader) Read(p []byte) (n int, err error) {
+	return 0, errors.New("error")
+}
+
 // can't create error
 func TestGetLinesFromReader(t *testing.T) {
 	tests := []struct {
@@ -103,7 +112,7 @@ func TestGetLinesFromReader(t *testing.T) {
 	}{
 		{
 			name: "Case1: Success",
-			r:    bytes.NewReader([]byte("aaa \nbbb\nccc")),
+			r:    bytes.NewReader([]byte("aaa\nbbb\nccc")),
 			want: []string{
 				"aaa", "bbb", "ccc",
 			},
@@ -111,29 +120,117 @@ func TestGetLinesFromReader(t *testing.T) {
 		},
 		{
 			name:    "Case2: Failed",
-			r:       bytes.NewReader([]byte("")),
+			r:       &errorReader{}, //how to create error
 			want:    nil,
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetLinesFromReader(tt.r)
+			gots, err := GetLinesFromReader(tt.r)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 			}
-			//if !reflect.DeepEqual(got, tt.expected) {
-			if reflect.TypeOf(got) != reflect.TypeOf(tt.want) {
-				t.Errorf("got = %v, want %v", reflect.TypeOf(got), reflect.TypeOf(tt.want))
+			for i, got := range gots {
+				if got != tt.want[i] {
+					t.Errorf("got = %v, want %v", got, tt.want[i])
+				}
+			}
+		})
+	}
+}
+func TestInsertRecords(t *testing.T) {
+	tests := []struct {
+		name    string
+		repo    data.Repo
+		records []string
+		wantErr bool
+	}{
+		{
+			name: "Case1: Success",
+			repo: &data.MockDB{
+				MockInsertRecord: func(string, string) error {
+					return nil
+				},
+			},
+			records: []string{
+				"successful input",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Case2: Failed",
+			repo: &data.MockDB{
+				MockInsertRecord: func(string, string) error {
+					return errors.New("Mock DB insert error")
+				},
+			},
+			records: []string{
+				"failed input",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := InsertRecords(tt.repo, tt.records)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestInsertRecords(t *testing.T) {
-
-}
-
 func TestGetTopKthVal(t *testing.T) {
-
+	tests := []struct {
+		name    string
+		repo    data.Repo
+		k       int
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "Case1: Success",
+			repo: &data.MockDB{
+				MockGetRecordsSortedByVal: func(int) ([]data.Record, error) {
+					records := []data.Record{
+						{
+							Uid: "a8f962e650be6e090d0",
+							Val: "1595",
+						},
+						{
+							Uid: "c1a812dda818edee076",
+							Val: "1618",
+						},
+					}
+					return records, nil
+				},
+			},
+			k:       2,
+			want:    "c1a812dda818edee076",
+			wantErr: false,
+		},
+		{
+			name: "Case2: Failed",
+			repo: &data.MockDB{
+				MockGetRecordsSortedByVal: func(int) ([]data.Record, error) {
+					return nil, errors.New("Mock DB get error")
+				},
+			},
+			k:       2,
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetTopKthVal(tt.repo, tt.k)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if got != tt.want {
+				t.Errorf("got = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
