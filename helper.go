@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"database/sql"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -13,14 +14,14 @@ import (
 	"github.com/ianlai/GoMap/data"
 )
 
-func RetrieveData(db *sql.DB, url string) ([]string, error) {
+func RetrieveData(url string, removeLength int64) ([]string, error) {
 	log.Println("[Main] RetrieveData from:", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	r, err := RemovePrefixData(resp.Body, 500)
+	r, err := RemovePrefixData(resp.Body, removeLength)
 	if err != nil {
 		return nil, err
 	}
@@ -40,8 +41,11 @@ func RemovePrefixData(r io.Reader, removeLength int64) (io.Reader, error) {
 func GetLinesFromReader(r io.Reader) ([]string, error) {
 	var lines []string
 	scanner := bufio.NewScanner(r)
+	count := 0
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
+		fmt.Println(count, lines)
+		count++
 	}
 	err := scanner.Err()
 	if err != nil {
@@ -53,7 +57,10 @@ func InsertRecords(db *sql.DB, records []string) error {
 	log.Println("[Main] InsertRecords")
 	for _, record := range records {
 		words := strings.Fields(record)
-		data.InsertRecord(db, words[0], words[1])
+		err := data.InsertRecord(db, words[0], words[1])
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

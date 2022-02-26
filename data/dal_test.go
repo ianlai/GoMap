@@ -1,46 +1,133 @@
 package data
 
 import (
+	"fmt"
 	"testing"
-	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 )
 
-func TestUpdateMap(t *testing.T) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("open a stub database failed: %s", err)
-	}
-	defer db.Close()
-	rows := mock.NewRows([]string{"uid", "id", "val", "updated_at"}).
-		AddRow(1, "c1a812dda818edee076", 1618, time.Now())
-		//AddRow(2, "0c2a9c4b0566e49721a", 377, time.Now())
-		//AddRow(3, "78eab4ccbdd98fa911e", 1886, time.Now())
+// 1. decide the query
+// 2. insert beforehand
+// 3. t.Fatal  t.Error
+// 4. mock.ExpectationsWereMet()
 
-	mock.ExpectQuery("INSERT INTO map (uid, val) VALUES ($1, $2)").WithArgs("78eab4ccbdd98fa911e", 1886).WillReturnRows(rows)
-	err = UpdateMap(db, "https://bucket-ian-1.s3.amazonaws.com/data_prefix.txt")
-	if err != nil {
-		t.Errorf("Expected no error, but error occured: %s", err)
+func TestInsertRecord(t *testing.T) {
+	params := Record{
+		Uid: "78eab4ccbdd98fa911e",
+		Val: "1886",
+	}
+	query := `INSERT INTO map (uid, val)`
+	tests := []struct {
+		name        string
+		mockClosure func(mock sqlmock.Sqlmock)
+		wantErr     bool
+	}{
+		{
+			name: "Case1: Successful",
+			mockClosure: func(mock sqlmock.Sqlmock) {
+				result := sqlmock.NewResult(1, 1)
+				mock.ExpectExec(query).
+					WithArgs(params.Uid, params.Val).
+					WillReturnResult(result)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Case2: Failed",
+			mockClosure: func(mock sqlmock.Sqlmock) {
+				mock.ExpectExec(query).
+					WithArgs(params.Uid, params.Val).
+					WillReturnError(fmt.Errorf("error_occured"))
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+			tt.mockClosure(mock)
+			gotErr := InsertRecord(db, params.Uid, params.Val)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("gotErr = %v, wantErr %v", gotErr, tt.wantErr)
+			}
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("There were unfulfilled expectations: %s", err)
+			}
+		})
 	}
 }
 
-func TestGetTopKth(t *testing.T) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("open a stub database failed: %s", err)
+func TestGetRecordsSortedByVal(t *testing.T) {
+	query := `SELECT 
+				uid, val 
+			FROM 
+				map 
+			ORDER BY 
+				val 
+			DESC LIMIT $1`
+	tests := []struct {
+		name        string
+		mockClosure func(mock sqlmock.Sqlmock)
+		k           int
+		want        []Record
+		wantErr     bool
+	}{
+		{
+			name: "Case1: Successful",
+			mockClosure: func(mock sqlmock.Sqlmock) {
+				result := sqlmock.NewResult(2, 2)
+				mock.ExpectExec(query).
+					WillReturnResult(result)
+			},
+			k: 2,
+			want: []Record{
+				{
+					Uid: "78eab4ccbdd98fa911e",
+					Val: "1886",
+				},
+				{
+					Uid: "78eab4ccbdd98fa911e",
+					Val: "1886",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Case2: Failed",
+			mockClosure: func(mock sqlmock.Sqlmock) {
+				mock.ExpectExec(query).
+					WillReturnError(fmt.Errorf("error_occured"))
+			},
+			k:       2,
+			want:    nil,
+			wantErr: true,
+		},
 	}
-	defer db.Close()
-	rows := mock.NewRows([]string{"uid", "id", "val", "updated_at"}).
-		AddRow(1, "c1a812dda818edee076", 1618, time.Now())
-		//AddRow(2, "0c2a9c4b0566e49721a", 377, time.Now())
-		//AddRow(3, "78eab4ccbdd98fa911e", 1886, time.Now())
-
-	mock.ExpectQuery("SELECT uid, val FROM map").WithArgs(2).WillReturnRows(rows)
-
-	got := GetTopKth(db, 2)
-	expected := "c1a812dda818edee076"
-	if got != expected {
-		t.Errorf("Expected: %s, Got: %s", expected, got)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+			tt.mockClosure(mock)
+			gotRecords, gotErr := GetRecordsSortedByVal(db, tt.k)
+			if (gotErr != nil) != tt.wantErr {
+				t.Errorf("gotErr = %v, wantErr %v", gotErr, tt.wantErr)
+			}
+			for i, got := range gotRecords {
+				if got != tt.want[i] {
+					t.Errorf("got = %v, want %v", got, tt.want[i])
+				}
+			}
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("There were unfulfilled expectations: %s", err)
+			}
+		})
 	}
 }

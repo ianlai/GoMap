@@ -9,11 +9,11 @@ import (
 func main() {
 	log.Println("Hello Map")
 	url := "https://bucket-ian-1.s3.amazonaws.com/data_prefix.txt"
+	var removedLength int64 = 500
 	k := 29
-
 	db := data.InitDB()
 
-	lines, err := RetrieveData(db, url)
+	lines, err := RetrieveData(url, removedLength)
 	if err != nil {
 		log.Printf("%s", err)
 	}
