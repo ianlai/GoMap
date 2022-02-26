@@ -2,6 +2,7 @@ version: '3'
 services:
   db:
     image: postgres
+    restart: always
     container_name: gomap_db
     environment:
       - POSTGRES_USER=gomap_admin
@@ -10,7 +11,6 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      #persistent  
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   app:

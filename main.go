@@ -1,16 +1,20 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/ianlai/GoMap/data"
 )
 
+const removedLength int64 = 500
+
 func main() {
-	log.Println("Hello Map")
-	url := "https://bucket-ian-1.s3.amazonaws.com/data_prefix.txt"
-	var removedLength int64 = 500
-	k := 6
+	log.Println("Hello GoMap")
+	//url := "https://bucket-ian-1.s3.amazonaws.com/data_prefix.txt"
+	k := 13
+	url := "https://bucket-ian-1.s3.amazonaws.com/data_full.txt"
+
 	db := data.InitDB()
 
 	lines, err := RetrieveData(url, removedLength)
@@ -23,10 +27,13 @@ func main() {
 		log.Printf("%s", err)
 	}
 
-	uid, err := GetTopKthVal(db, k)
+	records, err := GetTopKRecords(db, k)
 	if err != nil {
 		log.Printf("%s", err)
 	}
 
-	log.Printf("[Final] Top-%vth: %v\n", k, uid)
+	for i, record := range records {
+		//log.Printf("Top-%vth -> Uid: %v, Val:%v\n", k, record.Uid, record.Val)
+		fmt.Printf("%v: %v\n", i, record.Uid)
+	}
 }

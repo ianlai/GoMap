@@ -88,7 +88,6 @@ func TestRemovePrefixData(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 			}
-			//if !reflect.DeepEqual(got, tt.expected) {
 			if reflect.TypeOf(got) != reflect.TypeOf(tt.want) {
 				t.Errorf("got = %v, want %v", reflect.TypeOf(got), reflect.TypeOf(tt.want))
 			}
@@ -181,33 +180,43 @@ func TestInsertRecords(t *testing.T) {
 	}
 }
 
-func TestGetTopKthVal(t *testing.T) {
+func TestGetTopKRecords(t *testing.T) {
 	tests := []struct {
 		name    string
 		repo    data.Repo
 		k       int
-		want    string
+		want    []data.Record
 		wantErr bool
 	}{
 		{
 			name: "Case1: Success",
 			repo: &data.MockDB{
 				MockGetRecordsSortedByVal: func(int) ([]data.Record, error) {
+					//records should have descending values
 					records := []data.Record{
-						{
-							Uid: "a8f962e650be6e090d0",
-							Val: "1595",
-						},
 						{
 							Uid: "c1a812dda818edee076",
 							Val: "1618",
+						},
+						{
+							Uid: "a8f962e650be6e090d0",
+							Val: "1595",
 						},
 					}
 					return records, nil
 				},
 			},
-			k:       2,
-			want:    "c1a812dda818edee076",
+			k: 2,
+			want: []data.Record{
+				{
+					Uid: "c1a812dda818edee076",
+					Val: "1618",
+				},
+				{
+					Uid: "a8f962e650be6e090d0",
+					Val: "1595",
+				},
+			},
 			wantErr: false,
 		},
 		{
@@ -218,17 +227,17 @@ func TestGetTopKthVal(t *testing.T) {
 				},
 			},
 			k:       2,
-			want:    "",
+			want:    []data.Record{},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetTopKthVal(tt.repo, tt.k)
+			got, err := GetTopKRecords(tt.repo, tt.k)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if got != tt.want {
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("got = %v, want %v", got, tt.want)
 			}
 		})
