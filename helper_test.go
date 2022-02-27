@@ -10,7 +10,6 @@ import (
 	"github.com/ianlai/GoMap/data"
 )
 
-// test http get (really need a url to download?)
 func TestRetrieveData(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -100,8 +99,6 @@ type errorReader struct{}
 func (e *errorReader) Read(p []byte) (n int, err error) {
 	return 0, errors.New("error")
 }
-
-// can't create error
 func TestGetLinesFromReader(t *testing.T) {
 	tests := []struct {
 		name    string

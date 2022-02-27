@@ -9,7 +9,7 @@ import (
 )
 
 const removedLength int64 = 500
-const urlDefault string = "https://bucket-ian-1.s3.amazonaws.com/data_full.txt"
+const urlDefault string = "https://amp-technical-challenge.s3.ap-northeast-1.amazonaws.com/sw-engineer-challenge.txt"
 const numDefault int = 10
 
 func main() {

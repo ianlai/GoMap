@@ -11,9 +11,9 @@ The basic flow of this application is as follows.
 1. Read the parameters (`--url`, `--num`)
 2. Download the file from the given `url`
 3. Remove partial of the file from beginning (default: 500 Bytes)
-4. Insert the data into database.
-5. Get the first `num` of the records sorted by value 
-6. Print out the ID and value to terminal 
+4. Insert the data into database
+5. Get the first `num` of the records sorted by value
+6. Print out the ID and value to terminal
 
 # 2. Stack 
 * Programming language   : Go 1.15
@@ -39,7 +39,6 @@ docker build -t gomap_app .
 ```bash
 docker run -it -e DBHOST=$DBHOST --net=gomap_default gomap_app --num 20 --url "https://amp-technical-challenge.s3.ap-northeast-1.amazonaws.com/sw-engineer-challenge.txt"
 ```
-
 ### Show the help
 ```bash
 docker run gomap_app --help

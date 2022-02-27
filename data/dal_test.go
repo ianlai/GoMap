@@ -8,12 +8,6 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 )
 
-// 1. decide the query
-// 2. insert beforehand
-// 3. sqlmock.NewResult(2, 2)
-// 4. mock.ExpectationsWereMet()
-// 5. t.Fatal  t.Error //t.Fatal(exit for that testcase immediately )
-
 func TestInsertRecord(t *testing.T) {
 	params := Record{
 		Uid: "78eab4ccbdd98fa911e",
