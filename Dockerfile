@@ -2,4 +2,5 @@ FROM golang:alpine
 WORKDIR /app
 ADD . /app
 RUN cd /app && go build -o app
-ENTRYPOINT ./app
+ENTRYPOINT ["./app"]
+# CMD [ "--num 20" ]

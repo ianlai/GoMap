@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 
@@ -8,12 +9,18 @@ import (
 )
 
 const removedLength int64 = 500
+const urlDefault string = "https://bucket-ian-1.s3.amazonaws.com/data_full.txt"
+const numDefault int = 10
 
 func main() {
 	log.Println("Hello GoMap")
-	//url := "https://bucket-ian-1.s3.amazonaws.com/data_prefix.txt"
-	k := 13
-	url := "https://bucket-ian-1.s3.amazonaws.com/data_full.txt"
+	var url string
+	var num int
+	flag.StringVar(&url, "url", urlDefault, "The URL to download the data")
+	flag.IntVar(&num, "num", numDefault, "Show the largest number records based on value")
+	flag.Parse()
+	fmt.Printf("URL: %s\n", url)
+	fmt.Printf("NUM: %v\n", num)
 
 	db := data.InitDB()
 
@@ -27,7 +34,7 @@ func main() {
 		log.Printf("%s", err)
 	}
 
-	records, err := GetTopKRecords(db, k)
+	records, err := GetTopKRecords(db, num)
 	if err != nil {
 		log.Printf("%s", err)
 	}
