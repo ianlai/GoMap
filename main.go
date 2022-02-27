@@ -14,13 +14,15 @@ const numDefault int = 10
 
 func main() {
 	log.Println("Hello GoMap")
+
+	//Read flag
 	var url string
 	var num int
 	flag.StringVar(&url, "url", urlDefault, "The URL to download the data")
-	flag.IntVar(&num, "num", numDefault, "Show the largest number records based on value")
+	flag.IntVar(&num, "num", numDefault, "Show the given number of records which have largest values")
 	flag.Parse()
-	fmt.Printf("URL: %s\n", url)
-	fmt.Printf("NUM: %v\n", num)
+	log.Printf("url: %s\n", url)
+	log.Printf("num: %v\n", num)
 
 	db := data.InitDB()
 
@@ -39,8 +41,9 @@ func main() {
 		log.Printf("%s", err)
 	}
 
-	for i, record := range records {
-		//log.Printf("Top-%vth -> Uid: %v, Val:%v\n", k, record.Uid, record.Val)
-		fmt.Printf("%v: %v\n", i, record.Uid)
+	//Show the final result in the requested format
+	fmt.Println("========== Final Result (The IDs of the largest values) ==========")
+	for _, record := range records {
+		fmt.Printf("%v\n", record.Uid)
 	}
 }

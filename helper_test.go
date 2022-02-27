@@ -119,7 +119,7 @@ func TestGetLinesFromReader(t *testing.T) {
 		},
 		{
 			name:    "Case2: Failed",
-			r:       &errorReader{}, //how to create error
+			r:       &errorReader{},
 			want:    nil,
 			wantErr: true,
 		},

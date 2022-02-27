@@ -13,18 +13,16 @@ const (
 	DBUser     = "gomap_admin"
 	DBPassword = "gomap_admin"
 	DBName     = "gomap_db"
+	DBPort     = "5432"
 
-	//Cnnect by docker-compose
-	//DBHost     = "db"  
-
-	//Connect from host machine through Host IP (confirmed)
-	//DBHost = "127.0.0.1" //connect by host
-	//DBHost = "localhost" //connect by host
-	//DBPort = "5432"
-
-	//Connect from Docker through Internal IP (confirmed)
+	//(3a) Connect from Docker through Internal IP
 	//DBHost = "172.27.0.2"
-	//DBPort = "5432"
+
+	//(3b) Connect from host machine through Host IP
+	//DBHost = "localhost" //connect by host
+
+	//(3c) Cnnect by docker-compose
+	//DBHost = "db"
 )
 
 // Repo interface
@@ -44,11 +42,14 @@ func NewDBRepo(db *sql.DB) *DB {
 }
 
 func InitDB() *DB {
+	//Get the DBHOST env variable to connect to database
+	DBHost := os.Getenv("DBHOST")
 
 	connStr := fmt.Sprintf(
 		"sslmode=disable host=%s port=%s user=%s dbname=%s password=%s ",
 		DBHost, DBPort, DBUser, DBName, DBPassword)
-	log.Printf("qqq Openning DB: %s ...\n", connStr)
+	log.Printf("Openning DB: %s \n", connStr)
+
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Println("DB open failed:", connStr, err)
@@ -63,5 +64,4 @@ func InitDB() *DB {
 
 	fmt.Println("DB connection successful!!")
 	return NewDBRepo(db)
-	//return db
 }
