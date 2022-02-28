@@ -37,7 +37,7 @@ docker build -t gomap_app .
 ```
 ### Run the application
 ```bash
-docker run -it -e DBHOST=$DBHOST --net=gomap_default gomap_app --num 20 --url "https://amp-technical-challenge.s3.ap-northeast-1.amazonaws.com/sw-engineer-challenge.txt"
+docker run -it -e DBHOST=$DBHOST --net=gomap_default gomap_app --num 20 --url "https://bucket-ian-1.s3.amazonaws.com/data_full.txt"
 ```
 ### Show the help
 ```bash
@@ -52,7 +52,7 @@ go build -o GoMap .
 ```
 ### Run the application 
 ```bash
-./GoMap --num 20 --url "https://amp-technical-challenge.s3.ap-northeast-1.amazonaws.com/sw-engineer-challenge.txt"
+./GoMap --num 20 --url "https://bucket-ian-1.s3.amazonaws.com/data_full.txt"
 ```
 ## (3c) Run the application with docker-compose
 ### Run with docker-compose 
@@ -62,7 +62,23 @@ By this method (3c), we can start app and database together. It's convinient but
 docker-compose up app 
 ```
 
-# 4. Test
+# 4. Complexity
+
+Assume the data size is N, and the input flag `--num` is K.
+### Time complexity
+- Insert N records: O(N)
+- Sort the data set: O(NlogN)
+- Read first K records: O(K)
+```
+Total time complexity: O(NlogN)
+```
+### Space complexity
+- Store N records: O(N)
+```
+Total space complexity: O(N)
+```
+
+# 5. Test
 We can run the test of handler and DAL by the following command.
 ```bash
 go test -v ./... 
