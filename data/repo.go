@@ -28,7 +28,8 @@ const (
 // Repo interface
 type Repo interface {
 	InsertRecord(string, string) error
-	GetRecordsSortedByVal(int) ([]Record, error)
+	GetRecordsSortedByVal(int, bool) ([]Record, error)
+	GetRecordByUid(string) (*Record, error)
 }
 
 type DB struct {

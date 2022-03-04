@@ -63,7 +63,7 @@ func InsertRecords(repo data.Repo, records []string) error {
 }
 func GetTopKRecords(repo data.Repo, k int) ([]data.Record, error) {
 	log.Printf("[Helper] Get top-%v records \n", k)
-	records, err := repo.GetRecordsSortedByVal(k)
+	records, err := repo.GetRecordsSortedByVal(k, true)
 	if err != nil {
 		return []data.Record{}, err
 	}

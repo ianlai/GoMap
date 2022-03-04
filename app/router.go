@@ -2,9 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
-	"net/http"
-	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -23,44 +20,11 @@ type ResponseError struct {
 
 func (s *Server) SetRouter(r *chi.Mux) {
 	r.Use(middleware.Logger)
-	r.Get("/status", s.handleShowStatus)
+	r.Get("/status", s.HandleShowStatus)
 	r.Route("/records", func(r chi.Router) {
-		r.Get("/{id}", s.handleShowRecord)
-		r.Get("/", s.handleListRecord)
+		r.Get("/", s.HandleListRecord)
+		r.Get("/{uid}", s.HandleShowRecord)
 	})
-}
-
-func (s *Server) handleShowStatus(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "The current time is: %s\n", time.Now())
-}
-func (s *Server) handleShowRecord(w http.ResponseWriter, r *http.Request) {
-	val := chi.URLParam(r, "name")
-	if val != "" {
-		fmt.Fprintf(w, "Hello %s!", val)
-	} else {
-		fmt.Fprintf(w, "Hello no name.")
-	}
-}
-func (s *Server) handleListRecord(w http.ResponseWriter, r *http.Request) {
-	result, err := s.Repo.GetRecordsSortedByVal(20)
-	if err != nil {
-		return
-	}
-	rj, err := json.Marshal(result)
-	if err != nil {
-		return
-	}
-	res := &Response{
-		Status: "ok",
-		Result: rj,
-	}
-	j, err := json.Marshal(res)
-	if err != nil {
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	//w.WriteHeader(status)
-	w.Write(j)
 }
 
 // func Send(w http.ResponseWriter, status int, result interface{}) {

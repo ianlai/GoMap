@@ -18,9 +18,29 @@ func (db *DB) InsertRecord(uid string, val string) error {
 	}
 	return nil
 }
+func (db *DB) GetRecordByUid(uid string) (*Record, error) {
+	query := `
+		SELECT 
+			* 
+		FROM 
+			map 
+		WHERE
+			uid = $1
+			`
+	log.Printf("[DAL] GetRecord: %s", uid)
+	row := db.QueryRow(query, uid)
 
-func (db *DB) GetRecordsSortedByVal(k int) ([]Record, error) {
-	const readData = `
+	r := &Record{}
+	err := row.Scan(&r.ID, &r.Uid, &r.Val)
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+func (db *DB) GetRecordsSortedByVal(k int, isSortedByVal bool) ([]Record, error) {
+	var query string
+	if isSortedByVal {
+		query = `
 		SELECT 
 			* 
 		FROM 
@@ -29,9 +49,16 @@ func (db *DB) GetRecordsSortedByVal(k int) ([]Record, error) {
 			val 
 		DESC 
 		LIMIT $1`
-
+	} else {
+		query = `
+		SELECT 
+			* 
+		FROM 
+			map 
+		LIMIT $1`
+	}
 	log.Printf("[DAL] GetRecordsSortedByVal: %v", k)
-	rows, err := db.Query(readData, k)
+	rows, err := db.Query(query, k)
 	if err != nil {
 		return nil, err
 	}
