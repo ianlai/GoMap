@@ -72,6 +72,11 @@ Assume the data size is N, and the input flag `--num` is K.
 ```
 Total time complexity: O(NlogN)
 ```
+### Time complexity (without DB)
+```
+Max-Heap approach: O(N + KlogN)
+Min-Heap approach: O(K + (N-K)logK)
+```
 ### Space complexity
 - Store N records: O(N)
 ```
