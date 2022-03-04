@@ -61,7 +61,6 @@ By this method (3c), we can start app and database together. It's convinient but
 ```bash
 docker-compose up app 
 ```
-
 # 4. Complexity
 
 Assume the data size is N, and the input flag `--num` is K.

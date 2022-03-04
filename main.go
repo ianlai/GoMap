@@ -24,10 +24,19 @@ func main() {
 	log.Println("Hello GoMap")
 
 	//Set routes
-	log.Println("Server started..")
+
+	db := data.InitDB()
+	log.Println("DB initialized.")
+
+	server := &app.Server{
+		Repo: db,
+		Name: "GoMap",
+	}
+	log.Println("Server created.")
 
 	r := chi.NewRouter()
-	app.SetRouter(r)
+	server.SetRouter(r)
+	log.Println("Router set.")
 
 	//Read flag
 	var url string
@@ -37,8 +46,6 @@ func main() {
 	flag.Parse()
 	log.Printf("url: %s\n", url)
 	log.Printf("num: %v\n", num)
-
-	db := data.InitDB()
 
 	lines, err := RetrieveData(url, removedLength)
 	if err != nil {

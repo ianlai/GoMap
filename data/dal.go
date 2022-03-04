@@ -22,7 +22,7 @@ func (db *DB) InsertRecord(uid string, val string) error {
 func (db *DB) GetRecordsSortedByVal(k int) ([]Record, error) {
 	const readData = `
 		SELECT 
-			uid, val 
+			* 
 		FROM 
 			map 
 		ORDER BY 
@@ -39,7 +39,7 @@ func (db *DB) GetRecordsSortedByVal(k int) ([]Record, error) {
 	var records []Record
 	for rows.Next() {
 		var r Record
-		err = rows.Scan(&r.Uid, &r.Val)
+		err = rows.Scan(&r.ID, &r.Uid, &r.Val)
 		if err != nil {
 			return nil, err
 		}
