@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-chi/chi"
+	"github.com/ianlai/GoMap/app"
 	"github.com/ianlai/GoMap/data"
 )
 
@@ -13,17 +15,19 @@ const removedLength int64 = 500
 const urlDefault string = "https://bucket-ian-1.s3.amazonaws.com/data_full.txt"
 const numDefault int = 10
 
+type UserInfo struct {
+	Name string `json:"namename"`
+	Age  int    `json:"ageage"`
+}
+
 func main() {
 	log.Println("Hello GoMap")
 
 	//Set routes
 	log.Println("Server started..")
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "root endpoint")
-	})
-	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "status endpoint")
-	})
+
+	r := chi.NewRouter()
+	app.SetRouter(r)
 
 	//Read flag
 	var url string
@@ -58,7 +62,7 @@ func main() {
 	}
 
 	//Start server
-	err = http.ListenAndServe(":8080", nil)
+	err = http.ListenAndServe(":8080", r)
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
