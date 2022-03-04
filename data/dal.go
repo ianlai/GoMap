@@ -27,7 +27,7 @@ func (db *DB) GetRecordByUid(uid string) (*Record, error) {
 		WHERE
 			uid = $1
 			`
-	log.Printf("[DAL] GetRecord: %s", uid)
+	log.Printf("[DAL] GetRecordByUid: %s", uid)
 	row := db.QueryRow(query, uid)
 
 	r := &Record{}
@@ -37,7 +37,7 @@ func (db *DB) GetRecordByUid(uid string) (*Record, error) {
 	}
 	return r, nil
 }
-func (db *DB) GetRecordsSortedByVal(k int, isSortedByVal bool) ([]Record, error) {
+func (db *DB) ListRecords(k int, isSortedByVal bool) ([]Record, error) {
 	var query string
 	if isSortedByVal {
 		query = `
@@ -57,7 +57,7 @@ func (db *DB) GetRecordsSortedByVal(k int, isSortedByVal bool) ([]Record, error)
 			map 
 		LIMIT $1`
 	}
-	log.Printf("[DAL] GetRecordsSortedByVal: %v", k)
+	log.Printf("[DAL] ListRecords: %v", k)
 	rows, err := db.Query(query, k)
 	if err != nil {
 		return nil, err

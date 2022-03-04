@@ -28,8 +28,13 @@ func (s *Server) HandleShowRecord(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write(rj)
 }
-func (s *Server) HandleListRecord(w http.ResponseWriter, r *http.Request) {
-	result, err := s.Repo.GetRecordsSortedByVal(20, false)
+func (s *Server) HandleListRecords(w http.ResponseWriter, r *http.Request) {
+
+	isSort := r.URL.Query().Get("sort")
+	result, err := s.Repo.ListRecords(20, false)
+	if isSort == "true" {
+		result, err = s.Repo.ListRecords(20, true)
+	}
 	if err != nil {
 		return
 	}

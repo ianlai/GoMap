@@ -22,7 +22,7 @@ func (s *Server) SetRouter(r *chi.Mux) {
 	r.Use(middleware.Logger)
 	r.Get("/status", s.HandleShowStatus)
 	r.Route("/records", func(r chi.Router) {
-		r.Get("/", s.HandleListRecord)
+		r.Get("/", s.HandleListRecords)
 		r.Get("/{uid}", s.HandleShowRecord)
 	})
 }
