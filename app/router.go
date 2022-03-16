@@ -1,22 +1,9 @@
 package app
 
 import (
-	"encoding/json"
-
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 )
-
-type Response struct {
-	Status string `json:"status"`
-	//Error  *ResponseError  `json:"error,omitempty"`
-	Result json.RawMessage `json:"result,omitempty"`
-}
-type ResponseError struct {
-	Code    int      `json:"code"`
-	Message string   `json:"message"`
-	Details []string `json:"details"`
-}
 
 func (s *Server) SetRouter(r *chi.Mux) {
 	r.Use(middleware.Logger)
