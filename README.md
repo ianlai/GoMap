@@ -1,19 +1,35 @@
 # GoMap App
 # 1. Purpose 
-* Take in command line inputs
-* Read in a section of a remote file
-* Sort and return X largest values
-* Dockerize the application
+## (1) Importer
+* Take command line inputs
+* Import a remote file 
+* Remove the header of the file (default 500 bytes)
+* Insert the records into database
 
-It's possible to achive the above purposes without using the database, however, it means we need to store all the data in the memory which is not scalble for a large input file. Therefore, I decided to import the data into a Postgres database.  
+## (2) Show Top-K result on command line
+* Sort and return X largest values in logs
+
+## (3) Serve a HTTP server 
+* Provide APIs
+  * /status
+  * /records
+  * /records/{uid}
+
+## (4) Dockerize the application
+* Use docker to create the database
+* Use docker-compose to manage the containers
+
+# 2. App Flow
+It's possible to achive the above purpose of returning Top-K values without using the database which has lower time complexity, however, it means we need to store all the data in the memory which is not scalble for a large input file. 
 
 The basic flow of this application is as follows. 
 1. Read the parameters (`--url`, `--num`)
 2. Download the file from the given `url`
-3. Remove partial of the file from beginning (default: 500 Bytes)
+3. Remove the header from beginning (default: 500 Bytes)
 4. Insert the data into database
 5. Get the first `num` of the records sorted by value
 6. Print out the ID and value to terminal
+7. Start the server 
 
 # 2. Stack 
 * Programming language   : Go 1.15
@@ -61,25 +77,27 @@ By this method (3c), we can start app and database together. It's convinient but
 ```bash
 docker-compose up app 
 ```
-# 4. Complexity
+# 4. Complexity 
 
 Assume the data size is N, and the input flag `--num` is K.
-### Time complexity
+## (1) Time complexity
 - Insert N records: O(N)
 - Sort the data set: O(NlogN)
 - Read first K records: O(K)
 ```
 Total time complexity: O(NlogN)
 ```
-### Time complexity (without DB)
-```
-Max-Heap approach: O(N + KlogN)
-Min-Heap approach: O(K + (N-K)logK)
-```
-### Space complexity
+## (2) Space complexity
 - Store N records: O(N)
 ```
 Total space complexity: O(N)
+```
+
+## (3) Discussion: Time complexity without DB
+We can also choose to provide Top-K values without using database or sorting algorithm. If so, we basically have 2 approaches to achive the same goal.
+```
+Max-Heap approach: O(N + KlogN)
+Min-Heap approach: O(K + (N-K)logK)
 ```
 
 # 5. Test
@@ -95,9 +113,9 @@ go test -v ./... | grep -e PASS -e FAIL -e ok
 
 Example result: 
 ```
-go test -v ./... | grep -e PASS -e FAIL -e ok
---- PASS: TestRetrieveData (1.05s)
-    --- PASS: TestRetrieveData/Case1:_Success (1.05s)
+go test -v ./... --cover=True | grep -e PASS -e FAIL -e cover --color=never
+--- PASS: TestRetrieveData (1.24s)
+    --- PASS: TestRetrieveData/Case1:_Success (1.24s)
     --- PASS: TestRetrieveData/Case2:_Failed_-_URL_Format (0.00s)
     --- PASS: TestRetrieveData/Case3:_Failed_-_removeLength_ (0.00s)
 --- PASS: TestRemovePrefixData (0.00s)
@@ -113,13 +131,22 @@ go test -v ./... | grep -e PASS -e FAIL -e ok
     --- PASS: TestGetTopKRecords/Case1:_Success (0.00s)
     --- PASS: TestGetTopKRecords/Case2:_Failed (0.00s)
 PASS
-ok  	github.com/ianlai/GoMap	(cached)
+coverage: 53.6% of statements
+ok  	github.com/ianlai/GoMap	1.966s	coverage: 53.6% of statements
+--- PASS: TestHandleShowRecord (0.00s)
+    --- PASS: TestHandleShowRecord/Case1:_Success_(Found) (0.00s)
+    --- PASS: TestHandleShowRecord/Case2:_Failed_(Not_found) (0.00s)
+PASS
+coverage: 48.9% of statements
+ok  	github.com/ianlai/GoMap/app	(cached)	coverage: 48.9% of statements
 --- PASS: TestInsertRecord (0.00s)
     --- PASS: TestInsertRecord/Case1:_Successful (0.00s)
     --- PASS: TestInsertRecord/Case2:_Failed (0.00s)
---- PASS: TestGetRecordsSortedByVal (0.00s)
-    --- PASS: TestGetRecordsSortedByVal/Case1:_Successful (0.00s)
-    --- PASS: TestGetRecordsSortedByVal/Case2:_Failed (0.00s)
+--- PASS: TestListRecords (0.00s)
+    --- PASS: TestListRecords/Case1:_Successful_(sorted_by_val) (0.00s)
+    --- PASS: TestListRecords/Case2:_Successful_(unsorted) (0.00s)
+    --- PASS: TestListRecords/Case3:_Failed (0.00s)
 PASS
-ok  	github.com/ianlai/GoMap/data	(cached)
+coverage: 46.8% of statements
+ok  	github.com/ianlai/GoMap/data	(cached)	coverage: 46.8% of statements
 ```
