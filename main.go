@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -15,28 +14,8 @@ const removedLength int64 = 500
 const urlDefault string = "https://bucket-ian-1.s3.amazonaws.com/data_full.txt"
 const numDefault int = 10
 
-type UserInfo struct {
-	Name string `json:"namename"`
-	Age  int    `json:"ageage"`
-}
-
 func main() {
 	log.Println("Hello GoMap")
-
-	//Set routes
-
-	db := data.InitDB()
-	log.Println("DB initialized.")
-
-	server := &app.Server{
-		Repo: db,
-		Name: "GoMap",
-	}
-	log.Println("Server created.")
-
-	r := chi.NewRouter()
-	server.SetRouter(r)
-	log.Println("Router set.")
 
 	//Read flag
 	var url string
@@ -44,9 +23,26 @@ func main() {
 	flag.StringVar(&url, "url", urlDefault, "The URL to download the data")
 	flag.IntVar(&num, "num", numDefault, "Show the given number of records which have largest values")
 	flag.Parse()
-	log.Printf("url: %s\n", url)
-	log.Printf("num: %v\n", num)
+	log.Printf("Read flag - url: %s\n", url)
+	log.Printf("Read flag - num: %v\n", num)
 
+	//Set database
+	db := data.InitDB()
+	log.Println("DB initialized.")
+
+	//Set server
+	server := &app.Server{
+		Repo: db,
+		Name: "GoMap",
+	}
+	log.Println("Server created.")
+
+	//Set router
+	r := chi.NewRouter()
+	server.SetRouter(r)
+	log.Println("Router set.")
+
+	//Run importer
 	lines, err := RetrieveData(url, removedLength)
 	if err != nil {
 		log.Printf("%s", err)
@@ -57,15 +53,14 @@ func main() {
 		log.Printf("%s", err)
 	}
 
+	//Show top-k results in log
 	records, err := GetTopKRecords(db, num)
 	if err != nil {
 		log.Printf("%s", err)
 	}
 
-	//Show the final result in the requested format
-	fmt.Println("========== Final Result (The IDs of the largest values) ==========")
 	for _, record := range records {
-		fmt.Printf("%v\n", record.Uid)
+		log.Printf("%v\n", record.Uid)
 	}
 
 	//Start server
