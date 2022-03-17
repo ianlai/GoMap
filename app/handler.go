@@ -11,16 +11,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-//TODO:
-// add commit id
-// add database ping
-// return in JSON
 func (s *Server) HandleShowStatus(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Current time: %s\n", time.Now())
 }
 
-//TODO:
-// handle fail request (done)
 func (s *Server) HandleShowRecord(w http.ResponseWriter, r *http.Request) {
 	uid := chi.URLParam(r, "uid")
 	result, err := s.Repo.GetRecordByUid(uid)
@@ -32,9 +26,6 @@ func (s *Server) HandleShowRecord(w http.ResponseWriter, r *http.Request) {
 	Send(w, http.StatusOK, result)
 }
 
-//TODO:
-// handle the header
-// add the send function (done)
 func (s *Server) HandleListRecords(w http.ResponseWriter, r *http.Request) {
 	isSort := r.URL.Query().Get("sort")
 	var result []data.Record

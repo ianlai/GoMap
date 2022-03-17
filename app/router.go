@@ -14,34 +14,6 @@ func (s *Server) SetRouter(r *chi.Mux) {
 	})
 }
 
-// func Send(w http.ResponseWriter, status int, result interface{}) {
-// 	rj, err := json.Marshal(result)
-// 	if err != nil {
-// 		http.Error(
-// 			w,
-// 			http.StatusText(http.StatusInternalServerError),
-// 			http.StatusInternalServerError,
-// 		)
-// 		return
-// 	}
-// 	r := &Response{
-// 		Status: StatusOK,
-// 		Result: rj,
-// 	}
-// 	j, err := json.Marshal(r)
-// 	if err != nil {
-// 		http.Error(
-// 			w,
-// 			http.StatusText(http.StatusInternalServerError),
-// 			http.StatusInternalServerError,
-// 		)
-// 		return
-// 	}
-// 	w.Header().Set("Content-Type", "application/json")
-// 	w.WriteHeader(status)
-// 	w.Write(j)
-// }
-
 // http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 // 	fmt.Fprintf(w, "root endpoint")
 // })
