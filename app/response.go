@@ -50,20 +50,12 @@ func Send(w http.ResponseWriter, status int, result interface{}) {
 }
 
 // Fail ends an unsuccessful JSON response with the stardard failure format.
-func Fail(w http.ResponseWriter, status, errCode int, details ...string) {
-	// msg, ok := frErrMap[errCode]
-	// if !ok {
-	// 	errCode = status
-	// 	msg = http.StatusText(status)
-	// }
-
-	errCode = status
+func Fail(w http.ResponseWriter, status int, details ...string) {
 	msg := http.StatusText(status)
-
 	r := &Response{
 		Status: StatusFail,
 		Error: &ResponseError{
-			Code:    errCode,
+			Code:    status,
 			Message: msg,
 			Details: details,
 		},

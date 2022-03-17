@@ -46,8 +46,7 @@ func (db *DB) ListRecords(k int, isSortedByVal bool) ([]Record, error) {
 		FROM 
 			map 
 		ORDER BY 
-			val 
-		DESC 
+			val DESC 
 		LIMIT $1`
 	} else {
 		query = `

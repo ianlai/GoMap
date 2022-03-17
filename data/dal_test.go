@@ -3,6 +3,7 @@ package data
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -59,49 +60,106 @@ func TestInsertRecord(t *testing.T) {
 	}
 }
 
-func TestGetRecordsSortedByVal(t *testing.T) {
-	query := `SELECT uid, val FROM map`
-
+func TestListRecords(t *testing.T) {
 	param_k := 2
 	tests := []struct {
-		name        string
-		mockClosure func(mock sqlmock.Sqlmock)
-		k           int
-		want        []Record
-		wantErr     bool
+		name          string
+		mockClosure   func(mock sqlmock.Sqlmock)
+		k             int
+		isSortedByVal bool
+		want          []Record
+		wantErr       bool
 	}{
 		{
-			name: "Case1: Successful",
+			name: "Case1: Successful (sorted by val)",
 			mockClosure: func(mock sqlmock.Sqlmock) {
-				result := sqlmock.NewRows([]string{"uid", "val"}).
-					AddRow("78eab4ccbdd98fa911e", "1886").
-					AddRow("0c2a9c4b0566e49721a", "377")
-				mock.ExpectQuery(query).
+				result := sqlmock.NewRows([]string{"ID", "uid", "val"}).
+					AddRow("1", "78eab4ccbdd98fa911e", "1886").
+					AddRow("2", "0c2a9c4b0566e49721a", "877").
+					AddRow("3", "aabbccdd11223344556", "455")
+				mock.ExpectQuery(regexp.QuoteMeta(`
+				SELECT 
+					* 
+				FROM 
+					map 
+				ORDER BY
+					val DESC
+				LIMIT $1`)).
 					WithArgs(param_k).WillReturnRows(result)
 			},
-			k: param_k,
+			k:             param_k,
+			isSortedByVal: true,
 			want: []Record{
 				{
+					ID:  1,
 					Uid: "78eab4ccbdd98fa911e",
 					Val: "1886",
 				},
 				{
+					ID:  2,
 					Uid: "0c2a9c4b0566e49721a",
-					Val: "377",
+					Val: "877",
+				},
+				{
+					ID:  3,
+					Uid: "aabbccdd11223344556",
+					Val: "455",
 				},
 			},
 			wantErr: false,
 		},
 		{
-			name: "Case2: Failed",
+			name: "Case2: Successful (unsorted)",
 			mockClosure: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery(query).
+				result := sqlmock.NewRows([]string{"ID", "uid", "val"}).
+					AddRow("1", "78eab4ccbdd98fa911e", "15").
+					AddRow("2", "0c2a9c4b0566e49721a", "877").
+					AddRow("3", "aabbccdd11223344556", "66")
+				mock.ExpectQuery(regexp.QuoteMeta(`
+				SELECT 
+					* 
+				FROM 
+					map 
+				LIMIT $1`)).
+					WithArgs(param_k).WillReturnRows(result)
+			},
+			k:             param_k,
+			isSortedByVal: false,
+			want: []Record{
+				{
+					ID:  1,
+					Uid: "78eab4ccbdd98fa911e",
+					Val: "15",
+				},
+				{
+					ID:  2,
+					Uid: "0c2a9c4b0566e49721a",
+					Val: "877",
+				},
+				{
+					ID:  3,
+					Uid: "aabbccdd11223344556",
+					Val: "66",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Case3: Failed",
+			mockClosure: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery(regexp.QuoteMeta(`
+				SELECT 
+					* 
+				FROM 
+					map 
+				LIMIT $1`)).
 					WithArgs(param_k).
 					WillReturnError(errors.New("error_occured"))
 			},
-			k:       param_k,
-			want:    nil,
-			wantErr: true,
+			k:             param_k,
+			isSortedByVal: false,
+			want:          nil,
+			wantErr:       true,
 		},
 	}
 	for _, tt := range tests {
@@ -113,13 +171,13 @@ func TestGetRecordsSortedByVal(t *testing.T) {
 			defer db.Close()
 			tt.mockClosure(mock)
 			customDB := &DB{db}
-			gotRecords, gotErr := customDB.GetRecordsSortedByVal(tt.k)
+			gotRecords, gotErr := customDB.ListRecords(tt.k, tt.isSortedByVal)
 			if (gotErr != nil) != tt.wantErr {
-				t.Errorf("gotErr = %v, wantErr %v", gotErr, tt.wantErr)
+				t.Errorf("gotErr => %v, wantErr => %v", gotErr, tt.wantErr)
 			}
 			for i, got := range gotRecords {
 				if got != tt.want[i] {
-					t.Errorf("got = %v, want %v", got, tt.want[i])
+					t.Errorf("got => %v, want => %v", got, tt.want[i])
 				}
 			}
 			if err := mock.ExpectationsWereMet(); err != nil {
