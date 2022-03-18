@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,6 +14,18 @@ import (
 
 func (s *Server) HandleShowStatus(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Current time: %s\n", time.Now())
+}
+
+func (s *Server) HandleCreateRecord(w http.ResponseWriter, r *http.Request) {
+
+	var record data.Record
+	err := json.NewDecoder(r.Body).Decode(&record)
+	result, err := s.Repo.InsertRecord(record.Uid, record.Val)
+	if err != nil {
+		log.Printf("%v", errors.Wrap(err, "HandleCreateRecord error"))
+		return
+	}
+	Send(w, http.StatusCreated, result)
 }
 
 func (s *Server) HandleShowRecord(w http.ResponseWriter, r *http.Request) {

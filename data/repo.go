@@ -27,7 +27,7 @@ const (
 
 // Repo interface
 type Repo interface {
-	InsertRecord(string, string) error
+	InsertRecord(string, string) (int64, error)
 	ListRecords(int, bool) ([]Record, error)
 	GetRecordByUid(string) (*Record, error)
 }

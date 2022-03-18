@@ -54,7 +54,7 @@ func InsertRecords(repo data.Repo, records []string) error {
 	log.Println("[Helper] InsertRecords")
 	for _, record := range records {
 		words := strings.Fields(record)
-		err := repo.InsertRecord(words[0], words[1])
+		_, err := repo.InsertRecord(words[0], words[1])
 		if err != nil {
 			return err
 		}

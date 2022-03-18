@@ -4,7 +4,7 @@ import (
 	"log"
 )
 
-func (db *DB) InsertRecord(uid string, val string) error {
+func (db *DB) InsertRecord(uid string, val string) (int64, error) {
 	const insertData = `
 		INSERT INTO 
 			map (uid, val) 
@@ -12,11 +12,15 @@ func (db *DB) InsertRecord(uid string, val string) error {
 			($1, $2)`
 
 	log.Printf("[DAL] InsertRecord: %s, %s", uid, val)
-	_, err := db.Exec(insertData, uid, val)
+	result, err := db.Exec(insertData, uid, val)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
 }
 func (db *DB) GetRecordByUid(uid string) (*Record, error) {
 	query := `

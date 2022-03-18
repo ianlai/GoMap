@@ -11,6 +11,8 @@ func (s *Server) SetRouter(r *chi.Mux) {
 	r.Route("/records", func(r chi.Router) {
 		r.Get("/", s.HandleListRecords)
 		r.Get("/{uid}", s.HandleShowRecord)
+		r.Get("/", s.HandleListRecords)
+		r.Post("/", s.HandleCreateRecord)
 	})
 }
 
