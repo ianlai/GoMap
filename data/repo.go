@@ -19,9 +19,9 @@ const (
 	//DBHost = "172.27.0.2"
 
 	//(3b) Connect from host machine through Host IP
-	DBHost = "localhost" //connect by host
+	//DBHost = "localhost" //connect by host
 
-	//(3c) Cnnect by docker-compose
+	//(3c) Connect by docker-compose
 	//DBHost = "db"
 )
 
@@ -44,7 +44,7 @@ func NewDBRepo(db *sql.DB) *DB {
 
 func InitDB() *DB {
 	//Get the DBHOST env variable to connect to database
-	//DBHost := os.Getenv("DBHOST")
+	DBHost := os.Getenv("DBHOST")
 
 	connStr := fmt.Sprintf(
 		"sslmode=disable host=%s port=%s user=%s dbname=%s password=%s ",

@@ -1,5 +1,7 @@
 FROM golang:alpine
-WORKDIR /app
+RUN apk add git
 ADD . /app
-RUN cd /app && go build -o app
-ENTRYPOINT ["./app"]
+WORKDIR /app
+RUN go build -o GoMap
+RUN files="$(ls -l)" && echo $files 
+ENTRYPOINT ["./GoMap"]

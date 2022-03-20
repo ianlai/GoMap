@@ -31,27 +31,26 @@ The basic flow of this application is as follows.
 6. Print out the ID and value to terminal
 7. Start the server 
 
-# 2. Stack 
+# 3. Stack 
 * Programming language   : Go 1.15
 * Database               : Postgres
 * Unit Test              : Go Testing package
-# 3. Usage 
+# 4. Usage 
 ## (1) Run the database 
 ```bash
 docker-compose up db
 ```
+## (2a) Run the application in docker (recommend)
 
-## (2) Set the database's IP address to $DBHOST env var
+### Set the database's IP address to $DBHOST env var
 ```bash
 source ./set_db_host.sh
 ```
-
-## (3a) Run the application in docker (recommend)
-### Build the application 
+### Build the application
 ```bash
 docker build -t gomap_app .
 ```
-### Run the application
+### Run the application (can set the arguments)
 ```bash
 docker run -it -e DBHOST=$DBHOST --net=gomap_default gomap_app --num 20 --url "https://bucket-ian-1.s3.amazonaws.com/data_full.txt"
 ```
@@ -60,24 +59,28 @@ docker run -it -e DBHOST=$DBHOST --net=gomap_default gomap_app --num 20 --url "h
 docker run gomap_app --help
 ```
 
-## (3b) Run the application in host machine
-By this method (3b), we can run the app in the host machine. However, the DBHost and DBPort in `repo.go` should be correctly set. If the DB container is running in the host machine, then we can set the DBHOST to `DBHost=localhost` and DBPORT to `DBPort=5432` to run the app.
+## (2b) Run the application in host machine
+
+### Set the database's IP address to $DBHOST env var
+```bash
+export DBHOST=localhost
+```
 ### Build the application 
 ```bash 
 go build -o GoMap . 
 ```
-### Run the application 
+### Run the application (can set the arguments)
 ```bash
 ./GoMap --num 20 --url "https://bucket-ian-1.s3.amazonaws.com/data_full.txt"
 ```
-## (3c) Run the application with docker-compose
-### Run with docker-compose 
-By this method (3c), we can start app and database together. It's convinient but we can't assign the arguments `--num` and `--url` in command line directly. Besides, we need to set DBHost in `repo.go` as `DBHost=db` for using this approach.
+## (2c) Run the application with docker-compose
+### Run the application (cannot set the arguments)
+By this method (3c), we can start both app and database with docker-compose. It's convinient because we don't need to set the network by our own (2b needs). We don't need to set `DBHOST` env var (both 2a and 2b need) also because it is defined in `docker-compose.yml` already. However, the downside is that we can't assign the arguments `--num` and `--url` in command line directly.
 
 ```bash
 docker-compose up app 
 ```
-# 4. Complexity 
+# 5. Complexity 
 
 Assume the data size is N, and the input flag `--num` is K.
 ## (1) Time complexity
@@ -100,7 +103,7 @@ Max-Heap approach: O(N + KlogN)
 Min-Heap approach: O(K + (N-K)logK)
 ```
 
-# 5. Test
+# 6. Test
 We can run the test of handler and DAL by the following command.
 ```bash
 go test -v ./... 

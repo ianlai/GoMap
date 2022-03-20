@@ -20,6 +20,8 @@ services:
       dockerfile: Dockerfile
       args:
         SSH_KEY: ${SSH_KEY}
+    environment:
+      - DBHOST=db
     ports:
       - 8001:8001
     depends_on:
